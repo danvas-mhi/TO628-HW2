@@ -1,14 +1,19 @@
 ---
 title: "HW2 Telemarketing"
-author: "Enter Your Name Here"
-date: "3/22/2020"
+author: "Daniel Vasquez"
+date: "11/08/2020"
 output:
   html_document:
     toc: true
     theme: readable
     highlight: tango
-    code_folding: show
+    code_folding: hide
 ---
+```{r}
+library(caret)
+library(e1071)
+library(neuralnet)
+```
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -73,3 +78,88 @@ tele_test <- tele_norm[test_set, ]
 ```
 
 > Now you are ready to build your ANN model. Feel free to modify the data load, cleaning and preparation code above as per your preference.
+
+## 01 Logistic Regression Model
+```{r, cache=TRUE}
+tele_LR <- glm(yyes ~ ., data = tele_train, family = binomial(link = "logit"))
+summary(tele_LR)
+# Summary indicated irrelevant variables
+```
+
+## 02 Stepwise Regression [Data Refinement]
+```{r, cache=TRUE}
+# Creation of model
+tele_step <- step(tele_LR, direction="backward")
+summary(tele_step)
+
+#Evaluation matrix. 50% prediction level for classification of a calls = YES.
+
+p_step <- predict(tele_step, tele_test, type = "response")
+p_cat <- ifelse(p_step >= 0.5, 1, 0)
+```
+
+## 03 Prediction w/ StepWise Regression Eval
+```{r, cache=TRUE}
+tele_test$p <- ifelse(p_step >= 0.5, 1, 0)
+tele_test$p <- as.factor(tele_test$p)
+
+str(tele_test$p)
+str(as.factor(tele_test$yyes))
+```
+
+## 04 Evaluation Matrix
+```{r}
+confusionMatrix(as.factor(p_cat), as.factor(tele_test$yyes), positive = "1")
+```
+
+
+## 05A ANN MODEL
+```{r, cache=TRUE}
+# Model 1: Initial ANN model using one hidden neuron
+
+tele_ANN1 <- neuralnet(formula = yyes ~ .,
+                              data = tele_train)
+plot(tele_ANN1)
+# model 1 :results
+tele_ANN1_results <- compute(tele_ANN1, tele_test[-53])
+
+# model 1: predicted strength values
+p_yes <- ifelse(tele_ANN1_results$net.result > .5, 1, 0)
+head(p_yes)
+
+# model 1 matrix
+confusionMatrix(as.factor(p_yes), as.numeric(tele_test$yyes), positive="1")
+
+```
+
+
+## 05B ANN Model w/ called LR Variables
+
+```{r, cache=TRUE}
+# removed family from call
+tele_ANN2 <- neuralnet(formula = yyes ~ jobblue.collar + jobretired + jobservices + 
+    jobstudent + maritalsingle + educationbasic.6y + educationuniversity.degree + 
+    defaultunknown + contacttelephone + monthaug + monthdec + 
+    monthjun + monthmar + monthmay + monthnov + day_of_weekmon + 
+    day_of_weekthu + day_of_weekwed + campaign + poutcomenonexistent + 
+    poutcomesuccess + emp.var.rate + cons.price.idx + cons.conf.idx + 
+    euribor3m + nr.employed + pdaysdummy, data = tele_train)
+
+# Model 2: results
+tele_ANN2_results <- compute(tele_ANN2, tele_test[-53])
+
+#Model 2: Predicted Strength Values
+p_yes2 <- ifelse(tele_ANN2_results$net.result > 0.5, 1, 0)
+head(p_yes2)
+
+#model 2 matrix
+confusionMatrix(as.factor(p_yes2), as.numeric(tele_test$yyes), positive="1")
+```
+
+## `r  Conclusion`
+
+`r I would leverage the logistical regression model because of transparency of the significant variables. The logistical regression model can tell me which variables are most significant in terms of predicting a positive response rate whereas the ANN model does not provide insights I can use for quality improvement. Accuracy matters less than insights in this assignment. The ANN model could likely yield more accurate predictive results but increase development time resources and analysis. A follow-up research proposal, if requested, can be sent to informatics department.`
+
+
+
+
