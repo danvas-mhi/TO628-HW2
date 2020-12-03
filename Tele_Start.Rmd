@@ -115,10 +115,9 @@ confusionMatrix(as.factor(p_cat), as.factor(tele_test$yyes), positive = "1")
 
 ## 05A ANN MODEL
 ```{r, cache=TRUE}
-# Model 1: Initial ANN model using one hidden neuron
+# model 1: Initial ANN model using one hidden neuron
 
-tele_ANN1 <- neuralnet(formula = yyes ~ .,
-                              data = tele_train)
+tele_ANN1 <- neuralnet(formula = yyes ~ ., data = tele_train)
 plot(tele_ANN1)
 # model 1 :results
 tele_ANN1_results <- compute(tele_ANN1, tele_test[-53])
@@ -128,7 +127,7 @@ p_yes <- ifelse(tele_ANN1_results$net.result > .5, 1, 0)
 head(p_yes)
 
 # model 1 matrix
-confusionMatrix(as.factor(p_yes), as.numeric(tele_test$yyes), positive="1")
+confusionMatrix(as.factor(p_yes), as.factor(tele_test$yyes), positive="1")
 
 ```
 
@@ -137,6 +136,7 @@ confusionMatrix(as.factor(p_yes), as.numeric(tele_test$yyes), positive="1")
 
 ```{r, cache=TRUE}
 # removed family from call
+
 tele_ANN2 <- neuralnet(formula = yyes ~ jobblue.collar + jobretired + jobservices + 
     jobstudent + maritalsingle + educationbasic.6y + educationuniversity.degree + 
     defaultunknown + contacttelephone + monthaug + monthdec + 
@@ -153,13 +153,10 @@ p_yes2 <- ifelse(tele_ANN2_results$net.result > 0.5, 1, 0)
 head(p_yes2)
 
 #model 2 matrix
-confusionMatrix(as.factor(p_yes2), as.numeric(tele_test$yyes), positive="1")
+confusionMatrix(as.factor(p_yes2), as.factor(tele_test$yyes), positive="1")
 ```
 
-## `r  Conclusion`
+## Conclusion
 
-`r I would leverage the logistical regression model because of transparency of the significant variables. The logistical regression model can tell me which variables are most significant in terms of predicting a positive response rate whereas the ANN model does not provide insights I can use for quality improvement. Accuracy matters less than insights in this assignment. The ANN model could likely yield more accurate predictive results but increase development time resources and analysis. A follow-up research proposal, if requested, can be sent to informatics department.`
-
-
-
+I would leverage the logistical regression model because of transparency of the significant variables. The logistical regression model can tell me which variables are most significant in terms of predicting a positive response rate whereas the ANN model does not provide insights I can use for quality improvement. Accuracy matters less than insights in this assignment. The ANN model could likely yield more accurate predictive results but increase development time resources and analysis. A follow-up research proposal, if requested, can be sent to informatics department.
 
